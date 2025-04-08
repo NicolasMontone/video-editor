@@ -594,11 +594,16 @@ export default function VideoUploader () {
 
                     // Check if click is within any trim region
                     const isInTrimRegion = trimRegions.some(
-                      region => newTime >= region.startTime && newTime <= region.endTime
+                      region =>
+                        newTime >= region.startTime && newTime <= region.endTime
                     )
 
                     // Only update time if not clicking in a trim region
-                    if (!isInTrimRegion && !isDraggingTrim && !isDraggingRegion) {
+                    if (
+                      !isInTrimRegion &&
+                      !isDraggingTrim &&
+                      !isDraggingRegion
+                    ) {
                       videoRef.current.currentTime = newTime
                       setCurrentTime(newTime)
                     }
@@ -626,7 +631,7 @@ export default function VideoUploader () {
               {/* Current time indicator */}
               {videoSrc && (
                 <div
-                  className='absolute top-0 bottom-0 w-0.5 px-2 bg-red-400 z-10 cursor-ew-resize'
+                  className='absolute top-0 bottom-0 w-0.5 bg-[#0096FF] z-10 cursor-ew-resize'
                   style={{ left: `${(currentTime / duration) * 100}%` }}
                 />
               )}
@@ -707,7 +712,7 @@ export default function VideoUploader () {
                   </div>
                 ))}
 
-              {/* Zoom region */}
+              {/* Zoom region
               {videoSrc && zoomLevel > 100 && (
                 <div
                   className='absolute h-12 bottom-0 bg-green-200 border border-green-400 rounded-md flex items-center justify-center'
@@ -721,6 +726,7 @@ export default function VideoUploader () {
                   </div>
                 </div>
               )}
+              */}
             </div>
           </div>
 
