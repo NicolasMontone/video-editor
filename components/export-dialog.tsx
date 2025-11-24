@@ -34,7 +34,7 @@ export function ExportDialog({ videoBlob, videoSrc }: ExportDialogProps) {
       return
     }
 
-    if (!ffmpeg.loaded) {
+    if (!ffmpeg || !ffmpeg.loaded) {
       setExportError("FFmpeg is not ready. Please try again.")
       return
     }
@@ -81,7 +81,7 @@ export function ExportDialog({ videoBlob, videoSrc }: ExportDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 h-9" disabled={!videoSrc}>
+        <Button variant="outline" size="sm" className="gap-1 h-9 bg-transparent" disabled={!videoSrc}>
           <Download className="size-4" />
           Export
         </Button>
