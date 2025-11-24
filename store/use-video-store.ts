@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create } from "zustand"
 
 export type TrimRegion = {
   id: string
@@ -17,24 +17,23 @@ type VideoState = {
   isPlaying: boolean
   trimRegions: TrimRegion[]
   zoomLevel: number
-  activeTool: 'trim' | 'zoom' | null
+  activeTool: "trim" | "zoom" | null
   history: HistoryState
+  isExporting: boolean
+  exportProgress: number
 
   // Actions
   setCurrentTime: (time: number) => void
   setDuration: (duration: number) => void
   setIsPlaying: (isPlaying: boolean) => void
   setZoomLevel: (level: number) => void
-  setActiveTool: (tool: 'trim' | 'zoom' | null) => void
+  setActiveTool: (tool: "trim" | "zoom" | null) => void
+  setIsExporting: (isExporting: boolean) => void
+  setExportProgress: (progress: number) => void
 
   // Trim actions
   addTrimRegion: (startTime: number) => void
-  updateTrimRegion: (
-    id: string,
-    startTime: number,
-    endTime: number,
-    saveToHistory?: boolean
-  ) => void
+  updateTrimRegion: (id: string, startTime: number, endTime: number, saveToHistory?: boolean) => void
   removeTrimRegion: (id: string) => void
 
   // History actions
@@ -53,17 +52,20 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     past: [],
     future: [],
   },
+  isExporting: false,
+  exportProgress: 0,
 
   setCurrentTime: (time) => set({ currentTime: time }),
   setDuration: (duration) => set({ duration }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setZoomLevel: (level) => set({ zoomLevel: level }),
   setActiveTool: (tool) => set({ activeTool: tool }),
+  setIsExporting: (isExporting) => set({ isExporting }),
+  setExportProgress: (progress) => set({ exportProgress: progress }),
 
   addTrimRegion: (startTime) => {
     const state = get()
 
-    // Calculate end time (10% of video duration)
     const trimDuration = state.duration * 0.1
     const endTime = Math.min(startTime + trimDuration, state.duration)
 
@@ -73,7 +75,6 @@ export const useVideoStore = create<VideoState>((set, get) => ({
       endTime,
     }
 
-    // Save current state to history
     const newPast = [...state.history.past, [...state.trimRegions]]
 
     set({
@@ -82,7 +83,6 @@ export const useVideoStore = create<VideoState>((set, get) => ({
         past: newPast,
         future: [],
       },
-      // Don't stay in trim mode
       activeTool: null,
     })
   },
@@ -90,14 +90,11 @@ export const useVideoStore = create<VideoState>((set, get) => ({
   updateTrimRegion: (id, startTime, endTime, saveToHistory = true) => {
     const state = get()
 
-    // Create updated regions
     const updatedRegions = state.trimRegions.map((region) =>
-      region.id === id ? { ...region, startTime, endTime } : region
+      region.id === id ? { ...region, startTime, endTime } : region,
     )
 
-    // Only save to history if explicitly requested (typically on mouse up)
     if (saveToHistory) {
-      // Standard history saving (for non-drag operations)
       const newPast = [...state.history.past, [...state.trimRegions]]
 
       set({
@@ -108,7 +105,6 @@ export const useVideoStore = create<VideoState>((set, get) => ({
         },
       })
     } else {
-      // Just update the state without saving to history
       set({ trimRegions: updatedRegions })
     }
   },
@@ -116,7 +112,6 @@ export const useVideoStore = create<VideoState>((set, get) => ({
   removeTrimRegion: (id) => {
     const state = get()
 
-    // Save current state to history
     const newPast = [...state.history.past, [...state.trimRegions]]
 
     set({
