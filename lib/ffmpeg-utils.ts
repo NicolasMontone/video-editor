@@ -1,15 +1,15 @@
-import { type FFmpeg, toBlobURL } from "@ffmpeg/ffmpeg"
+import { FFmpeg } from "@ffmpeg/ffmpeg"
+import { toBlobURL } from "@ffmpeg/util"
 
 let ffmpegInstance: FFmpeg | null = null
 
 export async function initFFmpeg() {
-  if (ffmpegInstance) return ffmpegInstance
+  if (ffmpegInstance?.isLoaded) return ffmpegInstance
 
-  const FFmpegModule = require("@ffmpeg/ffmpeg").FFmpeg
-  const ffmpeg = new FFmpegModule()
+  const ffmpeg = new FFmpeg()
 
   const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm"
-  ffmpeg.load({
+  await ffmpeg.load({
     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
   })
@@ -31,11 +31,11 @@ export async function trimAndExportVideo(
   const outputName = "output.mp4"
 
   const arrayBuffer = await file.arrayBuffer()
-  ffmpeg.FS("writeFile", inputName, new Uint8Array(arrayBuffer))
+  ffmpeg.writeFile(inputName, new Uint8Array(arrayBuffer))
 
   // Build FFmpeg command to trim video
   const duration = endTime - startTime
-  await ffmpeg.run(
+  await ffmpeg.exec([
     "-i",
     inputName,
     "-ss",
@@ -49,15 +49,15 @@ export async function trimAndExportVideo(
     "-crf",
     "28",
     outputName,
-  )
+  ])
 
   // Read output file
-  const data = ffmpeg.FS("readFile", outputName)
+  const data = ffmpeg.readFile(outputName)
   const blob = new Blob([data.buffer], { type: "video/mp4" })
 
   // Clean up
-  ffmpeg.FS("unlink", inputName)
-  ffmpeg.FS("unlink", outputName)
+  ffmpeg.deleteFile(inputName)
+  ffmpeg.deleteFile(outputName)
 
   return blob
 }
@@ -73,7 +73,7 @@ export async function trimMultipleRegions(
   const outputName = "output.mp4"
 
   const arrayBuffer = await file.arrayBuffer()
-  ffmpeg.FS("writeFile", inputName, new Uint8Array(arrayBuffer))
+  ffmpeg.writeFile(inputName, new Uint8Array(arrayBuffer))
 
   // Create a concat demuxer file for multiple segments
   let concatContent = ""
@@ -83,7 +83,7 @@ export async function trimMultipleRegions(
 
     // Extract each segment
     const duration = endTime - startTime
-    await ffmpeg.run(
+    await ffmpeg.exec([
       "-i",
       inputName,
       "-ss",
@@ -97,28 +97,28 @@ export async function trimMultipleRegions(
       "-crf",
       "28",
       segmentName,
-    )
+    ])
 
     concatContent += `file '${segmentName}'\n`
   }
 
   // Write concat file
-  ffmpeg.FS("writeFile", "concat.txt", concatContent)
+  ffmpeg.writeFile("concat.txt", concatContent)
 
   // Concatenate all segments
-  await ffmpeg.run("-f", "concat", "-safe", "0", "-i", "concat.txt", "-c", "copy", outputName)
+  await ffmpeg.exec(["-f", "concat", "-safe", "0", "-i", "concat.txt", "-c", "copy", outputName])
 
   // Read output file
-  const data = ffmpeg.FS("readFile", outputName)
+  const data = ffmpeg.readFile(outputName)
   const blob = new Blob([data.buffer], { type: "video/mp4" })
 
   // Clean up
-  ffmpeg.FS("unlink", inputName)
+  ffmpeg.deleteFile(inputName)
   for (let i = 0; i < trimRegions.length; i++) {
-    ffmpeg.FS("unlink", `segment_${i}.mp4`)
+    ffmpeg.deleteFile(`segment_${i}.mp4`)
   }
-  ffmpeg.FS("unlink", "concat.txt")
-  ffmpeg.FS("unlink", outputName)
+  ffmpeg.deleteFile("concat.txt")
+  ffmpeg.deleteFile(outputName)
 
   return blob
 }

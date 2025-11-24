@@ -16,7 +16,7 @@ interface VideoPlayerProps {
   onPlayPauseClick: () => void
   onSeek: (value: number[]) => void
   onTimeUpdate: () => void
-  onLoadedMetadata: () => void
+  onLoadedMetadata?: () => void
   onPlay: () => void
   onPause: () => void
 }

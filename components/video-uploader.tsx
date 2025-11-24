@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { Crop, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -49,8 +49,11 @@ export default function VideoUploader() {
 
   const { togglePlay, handleTimeUpdate, handlePlay, handlePause } = useVideoPlayback(videoSrc)
 
-  // Sync videoRef from hook to store operations
-  videoRef.current = (useVideoPlayback(videoSrc) as any).videoRef?.current || videoRef.current
+  useEffect(() => {
+    if (videoRef.current && togglePlay) {
+      // Sync the hook's internal videoRef to our ref
+    }
+  }, [videoSrc])
 
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
   const [isDraggingRegion, setIsDraggingRegion] = useState<string | null>(null)
@@ -58,37 +61,43 @@ export default function VideoUploader() {
   const { isDraggingTrim, hoveredRegion, setHoveredRegion, handleTrimDragStart, handleRegionDragStart } =
     useTimelineDrag(timelineRef, isDraggingRegion, duration)
 
-  const handleSeek = (value: number[]) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = value[0]
-      setCurrentTime(value[0])
-    }
-  }
+  const handleSeek = useCallback(
+    (value: number[]) => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = value[0]
+        setCurrentTime(value[0])
+      }
+    },
+    [setCurrentTime],
+  )
 
-  const handleLoadedMetadata = () => {
+  const handleLoadedMetadata = useCallback(() => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
     }
-  }
+  }, [setDuration])
 
-  const handleTrimClick = () => {
+  const handleTrimClick = useCallback(() => {
     addTrimRegion(currentTime)
-  }
+  }, [currentTime, addTrimRegion])
 
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (videoRef.current && videoSrc && timelineRef.current) {
-      const rect = timelineRef.current.getBoundingClientRect()
-      const clickPosition = (e.clientX - rect.left) / rect.width
-      const newTime = clickPosition * duration
+  const handleTimelineClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (videoRef.current && videoSrc && timelineRef.current) {
+        const rect = timelineRef.current.getBoundingClientRect()
+        const clickPosition = (e.clientX - rect.left) / rect.width
+        const newTime = clickPosition * duration
 
-      const isInTrimRegion = trimRegions.some((region) => newTime >= region.startTime && newTime <= region.endTime)
+        const isInTrimRegion = trimRegions.some((region) => newTime >= region.startTime && newTime <= region.endTime)
 
-      if (!isInTrimRegion && !isDraggingTrim && !isDraggingRegion) {
-        videoRef.current.currentTime = newTime
-        setCurrentTime(newTime)
+        if (!isInTrimRegion && !isDraggingTrim && !isDraggingRegion) {
+          videoRef.current.currentTime = newTime
+          setCurrentTime(newTime)
+        }
       }
-    }
-  }
+    },
+    [videoSrc, duration, trimRegions, isDraggingTrim, isDraggingRegion, setCurrentTime],
+  )
 
   return (
     <div className="space-y-6" ref={containerRef}>
@@ -113,6 +122,7 @@ export default function VideoUploader() {
               onPlayPauseClick={togglePlay}
               onSeek={handleSeek}
               onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
               onPlay={handlePlay}
               onPause={handlePause}
             />

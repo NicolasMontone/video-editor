@@ -140,12 +140,12 @@ export function useTimelineDrag(
   }, [isDraggingRegion, dragStartX, trimRegions, duration, updateTrimRegion])
 
   const handleRegionDragStart = (region: TrimRegion) => (e: React.MouseEvent<HTMLElement>) => {
+    setDragStartX(e.clientX)
+    initialRegionStateRef.current = { ...region }
+
     if (e.target instanceof HTMLElement && !e.target.closest(".cursor-ew-resize") && !e.target.closest("button")) {
       e.preventDefault()
       e.stopPropagation()
-
-      setDragStartX(e.clientX)
-      initialRegionStateRef.current = { ...region }
     }
   }
 
