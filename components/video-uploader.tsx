@@ -380,7 +380,7 @@ export default function VideoUploader() {
                 <div className="mb-4 p-4 rounded-full bg-[#E5EFFF] text-[#0096FF]">
                   <Film className="h-12 w-12" />
                 </div>
-                <h2 className="mb-2 text-xl font-semibold text-gray-800">Start editing</h2>
+                <h2 className="mb-2 text-xl font-semibold text-gray-800">TEST</h2>
                 <p className="mb-6 text-center text-sm text-gray-600 max-w-md">
                   Upload a video to start trimming, zooming, and editing. Drag and drop your file here or use the button
                   below.
@@ -443,7 +443,13 @@ export default function VideoUploader() {
 
         <div className={`space-y-4 ${!videoSrc ? "opacity-50 pointer-events-none" : ""}`}>
           <div className="flex items-center gap-2 border-b pb-2">
-            <Button variant="outline" size="sm" className="gap-1 h-9" onClick={handleTrimClick} disabled={!videoSrc}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1 h-9 bg-transparent"
+              onClick={handleTrimClick}
+              disabled={!videoSrc}
+            >
               <Crop className="size-4" /> Trim
             </Button>
             {/* TODO, add zoom tool
@@ -457,7 +463,13 @@ export default function VideoUploader() {
               Zoom
             </Button> */}
             <div className="ml-auto flex gap-2">
-              <Button variant="outline" size="sm" className="gap-1 h-9" onClick={undo} disabled={!videoSrc}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1 h-9 bg-transparent"
+                onClick={undo}
+                disabled={!videoSrc}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -474,7 +486,13 @@ export default function VideoUploader() {
                   <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
                 </svg>
               </Button>
-              <Button variant="outline" size="sm" className="gap-1 h-9" onClick={redo} disabled={!videoSrc}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1 h-9 bg-transparent"
+                onClick={redo}
+                disabled={!videoSrc}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
