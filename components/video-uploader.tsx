@@ -380,7 +380,7 @@ export default function VideoUploader() {
                 <div className="mb-4 p-4 rounded-full bg-[#E5EFFF] text-[#0096FF]">
                   <Film className="h-12 w-12" />
                 </div>
-                <h2 className="mb-2 text-xl font-semibold text-gray-800">Start editing!</h2>
+                <h2 className="mb-2 text-xl font-semibold text-gray-800">Start Editing</h2>
                 <p className="mb-6 text-center text-sm text-gray-600 max-w-md">
                   Upload a video to start trimming, zooming, and editing. Drag and drop your file here or use the button
                   below.
